@@ -1,7 +1,6 @@
 package main
 
 import (
-	"http"
 	"image"
 	"image/color"
 	"image/gif"
@@ -10,6 +9,11 @@ import (
 	"math/rand"
 	"os"
 	"time"
+)
+
+import (
+	"log"
+	"net/http"
 )
 
 var palette = []color.Color{color.White, color.Black}
@@ -27,7 +31,7 @@ func main() {
 			lissajous(w)
 		}
 		http.HandleFunc("/", handler)
-		log.Fatal(http.ListenAndServe("localhost:8000", nil))
+		log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
 		return
 	}
 
@@ -58,5 +62,5 @@ func lissajous(out io.Writer) {
 		anim.Delay = append(anim.Delay, delay)
 		anim.Image = append(anim.Image, img)
 	}
-	gif.EncodAll(out, &anim)
+	gif.EncodeAll(out, &anim)
 }
