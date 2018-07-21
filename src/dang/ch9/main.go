@@ -1,11 +1,12 @@
 package main
 
-import "dang/ch9/memo1"
+import memo "dang/ch9/memo5"
 import "fmt"
 import "time"
 import "log"
 import "net/http"
 import "io/ioutil"
+import "sync"
 
 func httpGetBody(url string) (interface{}, error) {
 	resp, err := http.Get(url)
@@ -18,16 +19,24 @@ func httpGetBody(url string) (interface{}, error) {
 }
 
 func main() {
-	m := memo1.New(httpGetBody)
+	m := memo.New(httpGetBody)
+	var n sync.WaitGroup
 	for url := range incomingURLs() {
-		start := time.Now()
-		value, err := m.Get(url)
-		if err != nil {
-			log.Print(err)
-		}
-
-		fmt.Printf("%s, %s, %d bytes\n", url, time.Since(start), len(value.([]byte)))
+		n.Add(1)
+		go func(url string) {
+			fmt.Println(url)
+			defer n.Done()
+			start := time.Now()
+			value, err := m.Get(url)
+			if err != nil {
+				log.Print(err)
+				return
+			}
+			fmt.Printf("%s, %s, %d bytes\n", url, time.Since(start), len(value.([]byte)))
+		}(url)
 	}
+
+	n.Wait()
 }
 func incomingURLs() <-chan string {
 	ch := make(chan string)
